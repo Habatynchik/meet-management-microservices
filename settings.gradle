@@ -1,0 +1,6 @@
+rootProject.name = 'meet-management-microservices'
+
+include 'authentication-service'
+include 'user-service'
+include 'meet-service'
+include 'web-service'
