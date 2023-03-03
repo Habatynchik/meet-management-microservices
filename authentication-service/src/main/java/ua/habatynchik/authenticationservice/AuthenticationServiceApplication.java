@@ -1,4 +1,4 @@
-package ua.habatynchik.webservice;
+package ua.habatynchik.authenticationservice;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
