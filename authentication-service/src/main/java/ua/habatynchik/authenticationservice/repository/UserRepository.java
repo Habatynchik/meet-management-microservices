@@ -1,8 +1,8 @@
-package ua.habatynchik.authenticationservice.model.repository;
+package ua.habatynchik.authenticationservice.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import ua.habatynchik.authenticationservice.model.entity.User;
+import ua.habatynchik.authenticationservice.model.User;
 
 import java.util.Optional;
 

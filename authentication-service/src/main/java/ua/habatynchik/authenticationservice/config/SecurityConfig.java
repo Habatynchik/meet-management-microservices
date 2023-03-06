@@ -1,4 +1,4 @@
-package ua.habatynchik.authenticationservice.model.config;
+package ua.habatynchik.authenticationservice.config;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;

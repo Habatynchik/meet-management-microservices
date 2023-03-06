@@ -1,8 +1,7 @@
-package ua.habatynchik.authenticationservice.model.service;
+package ua.habatynchik.authenticationservice.service;
 
 import org.springframework.stereotype.Service;
-import ua.habatynchik.authenticationservice.model.entity.User;
-import ua.habatynchik.authenticationservice.model.exeptions.UserNotFoundException;
+import ua.habatynchik.authenticationservice.model.User;
 
 @Service
 public interface UserService {

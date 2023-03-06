@@ -1,4 +1,4 @@
-package ua.habatynchik.authenticationservice.model.entity;
+package ua.habatynchik.authenticationservice.model;
 
 import jakarta.persistence.*;
 import lombok.*;

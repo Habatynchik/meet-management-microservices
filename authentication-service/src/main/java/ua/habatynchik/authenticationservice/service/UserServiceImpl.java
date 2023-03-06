@@ -1,11 +1,10 @@
-package ua.habatynchik.authenticationservice.model.service;
+package ua.habatynchik.authenticationservice.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
-import ua.habatynchik.authenticationservice.model.entity.User;
-import ua.habatynchik.authenticationservice.model.exeptions.UserNotFoundException;
-import ua.habatynchik.authenticationservice.model.repository.UserRepository;
+import ua.habatynchik.authenticationservice.model.User;
+import ua.habatynchik.authenticationservice.repository.UserRepository;
 
 @Service
 @RequiredArgsConstructor

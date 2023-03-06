@@ -2,16 +2,13 @@ package ua.habatynchik.authenticationservice.controller;
 
 
 import lombok.AllArgsConstructor;
-import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ua.habatynchik.authenticationservice.model.config.JwtGeneratorInterface;
-import ua.habatynchik.authenticationservice.model.entity.Role;
-import ua.habatynchik.authenticationservice.model.entity.User;
-import ua.habatynchik.authenticationservice.model.exeptions.UserNotFoundException;
-import ua.habatynchik.authenticationservice.model.service.UserService;
+import ua.habatynchik.authenticationservice.config.JwtGeneratorInterface;
+import ua.habatynchik.authenticationservice.model.Role;
+import ua.habatynchik.authenticationservice.model.User;
+import ua.habatynchik.authenticationservice.service.UserService;
 
 @RestController
 @RequestMapping("api/v1/user")

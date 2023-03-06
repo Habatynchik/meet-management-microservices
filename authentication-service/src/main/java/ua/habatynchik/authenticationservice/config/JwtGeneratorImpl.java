@@ -1,15 +1,12 @@
-package ua.habatynchik.authenticationservice.model.config;
+package ua.habatynchik.authenticationservice.config;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.impl.TextCodec;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import ua.habatynchik.authenticationservice.model.entity.User;
+import ua.habatynchik.authenticationservice.model.User;
 
 import java.time.Instant;
-import java.time.LocalDate;
-import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
