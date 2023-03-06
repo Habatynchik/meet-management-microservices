@@ -1,4 +1,4 @@
 package ua.habatynchik.authenticationservice.exception;
 
-public class JwtAuthenticationException extends RuntimeException{
+public class JwtAuthenticationException extends Exception{
 }

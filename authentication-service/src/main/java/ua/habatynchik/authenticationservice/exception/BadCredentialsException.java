@@ -1,4 +1,4 @@
 package ua.habatynchik.authenticationservice.exception;
 
-public class BadCredentialsException extends RuntimeException{
+public class BadCredentialsException extends Exception{
 }
