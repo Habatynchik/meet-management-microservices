@@ -1,4 +1,4 @@
-package ua.habatynchik.authenticationservice.dto;
+package ua.habatynchik.webservice.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
-public class UserRegistrationDto {
+public class UserRegistrationDto{
 
     @NotBlank(message = "Username cannot be blank")
     private String username;

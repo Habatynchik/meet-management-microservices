@@ -8,13 +8,6 @@ import org.springframework.stereotype.Service;
 @Log4j2
 public class KafkaConsumerService {
 
-   /* @KafkaListener(topics = "${spring.kafka.topic.auth-request}", groupId = "${spring.kafka.consumer.group-id}")
-    public void consumeAuthRequest(String message) {
-        log.info(String.format("Received auth request message: %s", message));
-
-        // Обработка сообщения
-    }
-*/
     @KafkaListener(topics = "${spring.kafka.topic.jwk-request}", groupId = "${spring.kafka.consumer.group-id}")
     public void consumeJwkRequest(String message) {
         log.info(String.format("Received JWK request message: %s", message));

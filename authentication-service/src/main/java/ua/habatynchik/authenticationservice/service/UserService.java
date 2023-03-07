@@ -8,7 +8,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import ua.habatynchik.authenticationservice.dto.UserRegistrationDto;
 import ua.habatynchik.authenticationservice.exception.EmailAlreadyExistsException;
+import ua.habatynchik.authenticationservice.exception.PasswordMatchException;
 import ua.habatynchik.authenticationservice.exception.UserAlreadyExistsException;
 import ua.habatynchik.authenticationservice.model.Role;
 import ua.habatynchik.authenticationservice.model.User;
@@ -32,31 +34,42 @@ public class UserService implements UserDetailsService {
         return userOptional.orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
     }
 
+    public UserDetails loadUserByEmail(String email) throws UsernameNotFoundException {
+        Optional<User> userOptional = userRepository.findByEmail(email);
+
+        return userOptional.orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
+    }
+
     @Transactional
-    public User registerNewAccount(UserDto userDto) throws EmailAlreadyExistsException, UserAlreadyExistsException {
-        validateUserDto(userDto);
+    public User registerNewAccount(UserRegistrationDto userRegistrationDto) throws EmailAlreadyExistsException, UserAlreadyExistsException, PasswordMatchException {
+        validateUserRegistrationDto(userRegistrationDto);
 
         User user = new User()
-                .setUsername(userDto.getEmail())
-                .setEmail(userDto.getEmail())
-                .setFirstName(userDto.getFirstName())
-                .setSecondName(userDto.getSecondName())
-                .setPassword(new BCryptPasswordEncoder().encode(userDto.getPassword()))
+                .setUsername(userRegistrationDto.getEmail())
+                .setEmail(userRegistrationDto.getEmail())
+                .setFirstName(userRegistrationDto.getFirstName())
+                .setSecondName(userRegistrationDto.getSecondName())
+                .setPassword(new BCryptPasswordEncoder().encode(userRegistrationDto.getPassword()))
                 .setRole(roleRepository.findByRoleEnum(Role.RoleEnum.CLIENT));
 
         log.info("New account '{}' has been created", user);
         return userRepository.save(user);
     }
 
-    private void validateUserDto(UserDto userDto) throws EmailAlreadyExistsException, UserAlreadyExistsException {
-        if (isEmailUnique(userDto.getEmail())) {
-            log.info("Email {} is reserved", userDto.getEmail());
+
+    private void validateUserRegistrationDto(UserRegistrationDto userRegistrationDto) throws EmailAlreadyExistsException, UserAlreadyExistsException, PasswordMatchException {
+
+        if (isEmailUnique(userRegistrationDto.getEmail())) {
+            log.info("Email {} is reserved", userRegistrationDto.getEmail());
             throw new EmailAlreadyExistsException();
         }
-
-        if (isUsernameUnique(userDto.getUsername())) {
-            log.info("Username {} is reserved", userDto.getUsername());
+        if (isUsernameUnique(userRegistrationDto.getUsername())) {
+            log.info("Username {} is reserved", userRegistrationDto.getUsername());
             throw new UserAlreadyExistsException();
+        }
+        if (!userRegistrationDto.getPassword().equals(userRegistrationDto.getConfirmPassword())) {
+            log.info("Passwords don't match");
+            throw new PasswordMatchException();
         }
     }
 

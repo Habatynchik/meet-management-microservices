@@ -1,4 +1,4 @@
-package ua.habatynchik.authenticationservice.dto;
+package ua.habatynchik.webservice.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
