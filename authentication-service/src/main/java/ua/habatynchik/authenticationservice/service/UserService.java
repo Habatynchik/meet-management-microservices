@@ -8,7 +8,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import ua.habatynchik.authenticationservice.dto.UserDto;
 import ua.habatynchik.authenticationservice.exception.EmailAlreadyExistsException;
 import ua.habatynchik.authenticationservice.exception.UserAlreadyExistsException;
 import ua.habatynchik.authenticationservice.model.Role;
