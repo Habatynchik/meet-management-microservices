@@ -23,9 +23,11 @@ public class AuthenticationService {
 
     private final UserService userService;
 
-    public AuthenticationService(UserService userService) {
+    public AuthenticationService(KafkaTemplate<String, String> kafkaTemplate, UserService userService) {
+        this.kafkaTemplate = kafkaTemplate;
         this.userService = userService;
     }
+
 
     //TODO: check this
     @KafkaListener(topics = "${spring.kafka.topic.auth-request}",
