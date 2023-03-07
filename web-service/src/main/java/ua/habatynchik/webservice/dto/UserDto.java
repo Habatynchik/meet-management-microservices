@@ -1,9 +1,9 @@
-package ua.habatynchik.authenticationservice.dto;
+package ua.habatynchik.webservice.dto;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -16,5 +16,4 @@ public class UserDto {
     private String secondName;
     private String password;
     private String passwordCopy;
-
 }

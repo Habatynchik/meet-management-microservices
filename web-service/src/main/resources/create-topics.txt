@@ -1,0 +1,4 @@
+kafka-topics --bootstrap-server localhost:9092 --create --topic auth-request
+kafka-topics --bootstrap-server localhost:9092 --create --topic auth-response
+kafka-topics --bootstrap-server localhost:9092 --create --topic jwk-request
+kafka-topics --bootstrap-server localhost:9092 --create --topic jwk-response

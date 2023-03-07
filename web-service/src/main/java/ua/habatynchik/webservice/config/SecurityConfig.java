@@ -12,16 +12,17 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 @RequiredArgsConstructor
 @EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true)
-public class SecurityConfig  {
+public class SecurityConfig {
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.cors().and().csrf().disable();
         http
-
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/*").permitAll()
                         .anyRequest().permitAll()
                 );
+
         return http.build();
     }
 
