@@ -1,26 +1,18 @@
 package ua.habatynchik.authenticationservice.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.log4j.Log4j2;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.kafka.core.DefaultKafkaProducerFactory;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import ua.habatynchik.authenticationservice.dto.UserRegistrationDto;
-import ua.habatynchik.authenticationservice.exception.EmailAlreadyExistsException;
-import ua.habatynchik.authenticationservice.exception.PasswordMatchException;
-import ua.habatynchik.authenticationservice.exception.UserAlreadyExistsException;
 
-import java.util.HashMap;
 
 @Service
 @Log4j2
 public class AuthenticationService {
 
-    private KafkaTemplate<String, String> kafkaTemplate;
+  //  private KafkaTemplate<String, String> kafkaTemplate;
 
     @Value("${spring.kafka.topic.auth-response}")
     private String authResponseTopic;
@@ -33,7 +25,14 @@ public class AuthenticationService {
 
     @KafkaListener(topics = "${spring.kafka.topic.auth-request}", groupId = "${spring.kafka.consumer.group-id}")
     public void processRegistrationRequest(ConsumerRecord<String, UserRegistrationDto> record) {
-        UserRegistrationDto userRegistrationDto = record.value();
+
+        log.info(record.value());
+     /*
+     // not working
+     UserRegistrationDto userRegistrationDto = (UserRegistrationDto) record.value();
+     * */
+
+     /*   UserRegistrationDto userRegistrationDto = record.value();
 
         try {
             userService.registerNewAccount(userRegistrationDto);
@@ -48,12 +47,11 @@ public class AuthenticationService {
             return;
         }
 
-        sendResponse("User has been registered successfully", authResponseTopic);
+        sendResponse("User has been registered successfully", authResponseTopic);*/
     }
 
     private void sendResponse(String message, String topic) {
-        KafkaTemplate<String, String> kafkaTemplate = new KafkaTemplate<>(new DefaultKafkaProducerFactory<>(new HashMap<>()));
-        kafkaTemplate.send(topic, message);
+       //kafkaTemplate.send(topic, message);
     }
 
 }

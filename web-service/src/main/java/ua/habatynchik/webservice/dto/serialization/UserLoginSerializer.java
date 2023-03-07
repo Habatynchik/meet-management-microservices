@@ -1,12 +1,12 @@
-package ua.habatynchik.authenticationservice.dto.serialization;
+package ua.habatynchik.webservice.dto.serialization;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.kafka.common.serialization.Serializer;
-import ua.habatynchik.authenticationservice.dto.UserRegistrationDto;
+import ua.habatynchik.webservice.dto.UserLoginDto;
 
 import java.util.Map;
 
-public class UserRegistrationSerializer implements Serializer<UserRegistrationDto> {
+public class UserLoginSerializer implements Serializer<UserLoginDto> {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
@@ -14,11 +14,11 @@ public class UserRegistrationSerializer implements Serializer<UserRegistrationDt
     }
 
     @Override
-    public byte[] serialize(String topic, UserRegistrationDto data) {
+    public byte[] serialize(String topic, UserLoginDto data) {
         try {
             return objectMapper.writeValueAsBytes(data);
         } catch (Exception e) {
-            throw new RuntimeException("Error serializing UserRegistrationDto: " + e.getMessage(), e);
+            throw new RuntimeException("Error serializing UserLoginDto: " + e.getMessage(), e);
         }
     }
 
