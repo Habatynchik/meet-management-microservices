@@ -1,5 +1,6 @@
 package ua.habatynchik.authenticationservice.dto.deserialization;
 
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.kafka.common.serialization.Deserializer;
 import ua.habatynchik.authenticationservice.dto.UserRegistrationDto;
