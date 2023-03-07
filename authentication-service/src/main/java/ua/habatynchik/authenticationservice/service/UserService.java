@@ -45,7 +45,7 @@ public class UserService implements UserDetailsService {
         validateUserRegistrationDto(userRegistrationDto);
 
         User user = new User()
-                .setUsername(userRegistrationDto.getEmail())
+                .setUsername(userRegistrationDto.getUsername())
                 .setEmail(userRegistrationDto.getEmail())
                 .setFirstName(userRegistrationDto.getFirstName())
                 .setSecondName(userRegistrationDto.getSecondName())

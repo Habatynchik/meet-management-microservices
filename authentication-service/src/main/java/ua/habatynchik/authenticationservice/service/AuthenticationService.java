@@ -11,7 +11,6 @@ import ua.habatynchik.authenticationservice.exception.EmailAlreadyExistsExceptio
 import ua.habatynchik.authenticationservice.exception.PasswordMatchException;
 import ua.habatynchik.authenticationservice.exception.UserAlreadyExistsException;
 
-
 @Service
 @Log4j2
 public class AuthenticationService {
@@ -30,6 +29,7 @@ public class AuthenticationService {
 
 
     //TODO: check this
+
     @KafkaListener(topics = "${spring.kafka.topic.auth-request}",
             groupId = "${spring.kafka.consumer.group-id}",
             containerFactory = "userRegistrationKafkaListenerContainerFactory")
