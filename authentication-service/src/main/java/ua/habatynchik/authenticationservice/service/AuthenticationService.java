@@ -27,7 +27,7 @@ public class AuthenticationService {
     public String processRegistrationRequest(ConsumerRecord<String, UserRegistrationDto> record) {
         UserRegistrationDto userRegistrationDto = record.value();
 
-        log.info("hello");
+        log.info(record);
 
         try {
             userService.registerNewAccount(userRegistrationDto);

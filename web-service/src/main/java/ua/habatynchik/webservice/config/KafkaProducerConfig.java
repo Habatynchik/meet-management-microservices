@@ -1,6 +1,7 @@
 package ua.habatynchik.webservice.config;
 
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -37,12 +38,12 @@ public class KafkaProducerConfig {
         return new DefaultKafkaProducerFactory<>(producerConfigs(), new StringSerializer(), new UserLoginSerializer());
     }
 
-    @Bean
+   /* @Bean
     public ReplyingKafkaTemplate<String, UserLoginDto, String> userLoginDtoReplyingKafkaTemplate() {
         var producerFactory = new DefaultKafkaProducerFactory<>(producerConfigs(), new StringSerializer(), new UserLoginSerializer());
         var replyContainer = new KafkaMessageListenerContainer<>(stringConsumerFactory(), new ContainerProperties("auth-response"));
         return new ReplyingKafkaTemplate<>(producerFactory, replyContainer);
-    }
+    }*/
 
     @Bean
     public ProducerFactory<String, UserRegistrationDto> userRegistrationDtoProducerFactory() {
@@ -50,11 +51,23 @@ public class KafkaProducerConfig {
     }
 
     @Bean
-    public ReplyingKafkaTemplate<String, UserRegistrationDto, String> userRegistrationDtoReplyingKafkaTemplate() {
-        var producerFactory = new DefaultKafkaProducerFactory<>(producerConfigs(), new StringSerializer(), new UserRegistrationSerializer());
-        var replyContainer = new KafkaMessageListenerContainer<>(stringConsumerFactory(), new ContainerProperties("auth-response"));
-        return new ReplyingKafkaTemplate<>(producerFactory, replyContainer);
+    public ReplyingKafkaTemplate<String, UserRegistrationDto, String> userRegistrationDtoReplyingKafkaTemplate(
+            ProducerFactory<String, UserRegistrationDto> producerFactory,
+            KafkaMessageListenerContainer<String, String> container
+    ) {
+        container.setAutoStartup(false);
+        container.getContainerProperties().setPollTimeout(1000L);
+
+        return new ReplyingKafkaTemplate<>(producerFactory, container);
     }
+
+    @Bean
+    public KafkaMessageListenerContainer<String, String> replyContainer(
+            ConsumerFactory<String, String> consumerFactory) {
+        ContainerProperties containerProperties = new ContainerProperties("auth-response");
+        return new KafkaMessageListenerContainer<>(consumerFactory, containerProperties);
+    }
+
 
     @Bean
     public ConsumerFactory<String, String> stringConsumerFactory() {
