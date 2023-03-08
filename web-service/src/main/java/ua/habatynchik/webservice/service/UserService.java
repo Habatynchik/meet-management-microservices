@@ -12,6 +12,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.requestreply.ReplyingKafkaTemplate;
 import org.springframework.kafka.requestreply.RequestReplyFuture;
 import org.springframework.kafka.support.KafkaHeaders;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Service;
 import ua.habatynchik.webservice.dto.UserRegistrationDto;
 
@@ -22,7 +23,6 @@ import java.util.concurrent.ExecutionException;
 @RequiredArgsConstructor
 public class UserService {
 
-    @Autowired
     private final ReplyingKafkaTemplate<String, UserRegistrationDto, String> replyingKafkaTemplate;
 
     @Value("${spring.kafka.topic.auth-request}")
@@ -33,14 +33,13 @@ public class UserService {
         record.headers().add(new RecordHeader(KafkaHeaders.REPLY_TOPIC, authRequestTopic.getBytes()));
         RequestReplyFuture<String, UserRegistrationDto, String> future =
                 replyingKafkaTemplate.sendAndReceive(record);
-       /* try {
+        try {
             ConsumerRecord<String, String> consumerRecord = future.get();
             String result = consumerRecord.value();
             log.info("Received response: {}", result);
         } catch (Exception e) {
             throw new RuntimeException("Failed to get response from Kafka", e);
-        }*/
+        }
     }
-
 
 }

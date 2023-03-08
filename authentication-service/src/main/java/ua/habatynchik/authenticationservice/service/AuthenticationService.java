@@ -18,7 +18,6 @@ public class AuthenticationService {
 
     private final UserService userService;
 
-
     @KafkaListener(
             topics = "${spring.kafka.topic.auth-request}",
             groupId = "${spring.kafka.consumer.group-id}",
