@@ -33,17 +33,19 @@ public class KafkaProducerConfig {
     @Value("${spring.kafka.consumer.group-id}")
     private String GROUP_ID;
 
+    @Value("${spring.kafka.topic.auth-response}")
+    private String auth_response;
     @Bean
     public ProducerFactory<String, UserLoginDto> userLoginDtoProducerFactory() {
         return new DefaultKafkaProducerFactory<>(producerConfigs(), new StringSerializer(), new UserLoginSerializer());
     }
 
-   /* @Bean
+    @Bean
     public ReplyingKafkaTemplate<String, UserLoginDto, String> userLoginDtoReplyingKafkaTemplate() {
         var producerFactory = new DefaultKafkaProducerFactory<>(producerConfigs(), new StringSerializer(), new UserLoginSerializer());
-        var replyContainer = new KafkaMessageListenerContainer<>(stringConsumerFactory(), new ContainerProperties("auth-response"));
+        var replyContainer = new KafkaMessageListenerContainer<>(stringConsumerFactory(), new ContainerProperties(auth_response));
         return new ReplyingKafkaTemplate<>(producerFactory, replyContainer);
-    }*/
+    }
 
     @Bean
     public ProducerFactory<String, UserRegistrationDto> userRegistrationDtoProducerFactory() {
@@ -64,7 +66,7 @@ public class KafkaProducerConfig {
     @Bean
     public KafkaMessageListenerContainer<String, String> replyContainer(
             ConsumerFactory<String, String> consumerFactory) {
-        ContainerProperties containerProperties = new ContainerProperties("auth-response");
+        ContainerProperties containerProperties = new ContainerProperties(auth_response);
         return new KafkaMessageListenerContainer<>(consumerFactory, containerProperties);
     }
 
