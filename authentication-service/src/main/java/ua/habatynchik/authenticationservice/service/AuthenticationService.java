@@ -1,10 +1,10 @@
 package ua.habatynchik.authenticationservice.service;
 
+import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Service;
 import ua.habatynchik.authenticationservice.dto.UserRegistrationDto;
 import ua.habatynchik.authenticationservice.exception.EmailAlreadyExistsException;
@@ -13,48 +13,32 @@ import ua.habatynchik.authenticationservice.exception.UserAlreadyExistsException
 
 @Service
 @Log4j2
+@AllArgsConstructor
 public class AuthenticationService {
-
-    private KafkaTemplate<String, String> kafkaTemplate;
-
-    @Value("${spring.kafka.topic.auth-response}")
-    private String authResponseTopic;
 
     private final UserService userService;
 
-    public AuthenticationService(KafkaTemplate<String, String> kafkaTemplate, UserService userService) {
-        this.kafkaTemplate = kafkaTemplate;
-        this.userService = userService;
-    }
 
-
-    //TODO: check this
-
-    @KafkaListener(topics = "${spring.kafka.topic.auth-request}",
+    @KafkaListener(
+            topics = "${spring.kafka.topic.auth-request}",
             groupId = "${spring.kafka.consumer.group-id}",
-            containerFactory = "userRegistrationKafkaListenerContainerFactory")
-    public void processRegistrationRequest(ConsumerRecord<String, UserRegistrationDto> record) {
-
+            containerFactory = "userRegistrationKafkaListenerContainerFactory"
+    )
+    @SendTo("${spring.kafka.topic.auth-response}")
+    public String processRegistrationRequest(ConsumerRecord<String, UserRegistrationDto> record) {
         UserRegistrationDto userRegistrationDto = record.value();
+
+        log.info("hello");
 
         try {
             userService.registerNewAccount(userRegistrationDto);
+            return "User has been registered successfully";
         } catch (EmailAlreadyExistsException e) {
-            sendResponse("User with this email already exists", authResponseTopic);
-            return;
+            return "User with this email already exists";
         } catch (UserAlreadyExistsException e) {
-            sendResponse("User with this username already exists", authResponseTopic);
-            return;
+            return "User with this username already exists";
         } catch (PasswordMatchException e) {
-            sendResponse("Passwords don't match", authResponseTopic);
-            return;
+            return "Passwords don't match";
         }
-
-        sendResponse("User has been registered successfully", authResponseTopic);
     }
-
-    private void sendResponse(String message, String topic) {
-        kafkaTemplate.send(topic, message);
-    }
-
 }

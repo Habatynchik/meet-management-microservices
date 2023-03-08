@@ -1,15 +1,16 @@
 package ua.habatynchik.authenticationservice.config;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
+import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
-import org.springframework.kafka.config.KafkaListenerContainerFactory;
-import org.springframework.kafka.core.ConsumerFactory;
-import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
+import org.springframework.kafka.core.*;
 import ua.habatynchik.authenticationservice.dto.UserRegistrationDto;
 import ua.habatynchik.authenticationservice.dto.deserialization.UserRegistrationDeserializer;
 
@@ -19,6 +20,7 @@ import java.util.Map;
 @Configuration
 @EnableKafka
 public class KafkaConsumerConfig {
+    private final KafkaProperties kafkaProperties;
 
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
@@ -26,8 +28,9 @@ public class KafkaConsumerConfig {
     @Value("${spring.kafka.consumer.group-id}")
     private String groupId;
 
-    @Value("${spring.kafka.consumer.auto-offset-reset}")
-    private String autoOffsetReset;
+    public KafkaConsumerConfig(KafkaProperties kafkaProperties) {
+        this.kafkaProperties = kafkaProperties;
+    }
 
     @Bean
     public Map<String, Object> consumerConfigs() {
@@ -38,6 +41,18 @@ public class KafkaConsumerConfig {
         return props;
     }
 
+
+
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, UserRegistrationDto> userRegistrationKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, UserRegistrationDto> factory
+                = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(userRegistrationConsumerFactory());
+        factory.setReplyTemplate(kafkaTemplate());
+        return factory;
+    }
+
     @Bean
     public ConsumerFactory<String, UserRegistrationDto> userRegistrationConsumerFactory() {
         Map<String, Object> props = consumerConfigs();
@@ -46,25 +61,26 @@ public class KafkaConsumerConfig {
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, UserRegistrationDto> userRegistrationKafkaListenerContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory<String, UserRegistrationDto> factory = new ConcurrentKafkaListenerContainerFactory<>();
-        factory.setConsumerFactory(userRegistrationConsumerFactory());
-        return factory;
-    }
-
-
-    @Bean
-    public ConsumerFactory<String, String> stringConsumerFactory() {
-        Map<String, Object> props = consumerConfigs();
-        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,  StringDeserializer.class);
-        return new DefaultKafkaConsumerFactory<>(props);
+    public KafkaTemplate<String, String> kafkaTemplate() {
+        return new KafkaTemplate<>(producerFactory());
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, String> stringListenerContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory<String, String> factory = new ConcurrentKafkaListenerContainerFactory<>();
-        factory.setConsumerFactory(stringConsumerFactory());
-        return factory;
+    public KafkaOperations<String, String> kafkaOperations() {
+        return kafkaTemplate();
     }
 
+    @Bean
+    public ProducerFactory<String, String> producerFactory() {
+        return new DefaultKafkaProducerFactory<>(producerConfigs());
+    }
+
+    private Map<String, Object> producerConfigs() {
+        Map<String, Object> props = new HashMap<>(kafkaProperties.buildProducerProperties());
+        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        props.put(ProducerConfig.RETRIES_CONFIG, 3);
+        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        return props;
+    }
 }
