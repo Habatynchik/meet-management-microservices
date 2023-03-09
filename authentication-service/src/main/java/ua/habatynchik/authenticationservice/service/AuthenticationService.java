@@ -6,6 +6,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Service;
+import ua.habatynchik.authenticationservice.dto.UserLoginDto;
 import ua.habatynchik.authenticationservice.dto.UserRegistrationDto;
 import ua.habatynchik.authenticationservice.exception.EmailAlreadyExistsException;
 import ua.habatynchik.authenticationservice.exception.PasswordMatchException;
@@ -19,11 +20,11 @@ public class AuthenticationService {
     private final UserService userService;
 
     @KafkaListener(
-            topics = "${spring.kafka.topic.auth-request}",
+            topics = "${spring.kafka.topic.reg-request}",
             groupId = "${spring.kafka.consumer.group-id}",
             containerFactory = "userRegistrationKafkaListenerContainerFactory"
     )
-    @SendTo("${spring.kafka.topic.auth-response}")
+    @SendTo("${spring.kafka.topic.reg-response}")
     public String processRegistrationRequest(ConsumerRecord<String, UserRegistrationDto> record) {
         UserRegistrationDto userRegistrationDto = record.value();
 
@@ -40,4 +41,20 @@ public class AuthenticationService {
             return "Passwords don't match";
         }
     }
+
+    @KafkaListener(
+            topics = "${spring.kafka.topic.auth-request}",
+            groupId = "${spring.kafka.consumer.group-id}",
+            containerFactory = "userLoginKafkaListenerContainerFactory"
+    )
+    @SendTo("${spring.kafka.topic.auth-response}")
+    public String processAuthenticationRequest(ConsumerRecord<String, UserLoginDto> record) {
+
+        log.info(record);
+
+        UserLoginDto userLoginDto = record.value();
+
+        return userService.authenticate(userLoginDto);
+    }
+
 }

@@ -11,7 +11,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.*;
+import ua.habatynchik.authenticationservice.dto.UserLoginDto;
 import ua.habatynchik.authenticationservice.dto.UserRegistrationDto;
+import ua.habatynchik.authenticationservice.dto.deserialization.UserLoginDeserializer;
 import ua.habatynchik.authenticationservice.dto.deserialization.UserRegistrationDeserializer;
 
 import java.util.HashMap;
@@ -26,10 +28,28 @@ public class KafkaConsumerConfig {
     private String bootstrapServers;
 
     @Value("${spring.kafka.consumer.group-id}")
-    private String groupId;
+    private String group;
+
 
     public KafkaConsumerConfig(KafkaProperties kafkaProperties) {
         this.kafkaProperties = kafkaProperties;
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, UserLoginDto> userLoginKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, UserLoginDto> factory
+                = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(userLoginConsumerFactory());
+        factory.setReplyTemplate(kafkaTemplate());
+        return factory;
+    }
+
+    @Bean
+    public ConsumerFactory<String, UserLoginDto> userLoginConsumerFactory() {
+        Map<String, Object> props = consumerConfigs();
+
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,  UserLoginDeserializer.class);
+        return new DefaultKafkaConsumerFactory<>(props);
     }
 
     @Bean
@@ -65,8 +85,8 @@ public class KafkaConsumerConfig {
     @Bean
     public Map<String, Object> consumerConfigs() {
         Map<String, Object> props = new HashMap<>();
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, group);
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         return props;
     }
