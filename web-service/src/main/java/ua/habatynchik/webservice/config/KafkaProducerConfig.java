@@ -37,6 +37,22 @@ public class KafkaProducerConfig {
 
     @Value("${spring.kafka.topic.reg-response}")
     private String regResponse;
+
+    @Value("${spring.kafka.topic.jwt-response}")
+    private String jwtResponse;
+
+    @Bean
+    public ProducerFactory<String, String> stringProducerFactory() {
+        return new DefaultKafkaProducerFactory<>(producerConfigs(), new StringSerializer(), new StringSerializer());
+    }
+
+    @Bean
+    public ReplyingKafkaTemplate<String, String, String> stringReplyingKafkaTemplate() {
+        var producerFactory = new DefaultKafkaProducerFactory<>(producerConfigs(), new StringSerializer(), new StringSerializer());
+        var replyContainer = new KafkaMessageListenerContainer<>(stringConsumerFactory(), new ContainerProperties(jwtResponse));
+        return new ReplyingKafkaTemplate<>(producerFactory, replyContainer);
+    }
+
     @Bean
     public ProducerFactory<String, UserLoginDto> userLoginDtoProducerFactory() {
         return new DefaultKafkaProducerFactory<>(producerConfigs(), new StringSerializer(), new UserLoginSerializer());
@@ -70,11 +86,11 @@ public class KafkaProducerConfig {
         return new DefaultKafkaConsumerFactory<>(props);
     }
 
-    @Bean
-    public Map<String, Object> consumerConfigs() {
+
+    private Map<String, Object> consumerConfigs() {
         Map<String, Object> props = new HashMap<>();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, group);
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, "group-refresh");
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         return props;
     }

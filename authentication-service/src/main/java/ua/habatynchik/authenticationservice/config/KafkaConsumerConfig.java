@@ -20,19 +20,35 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Configuration
-@EnableKafka
 public class KafkaConsumerConfig {
     private final KafkaProperties kafkaProperties;
 
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
 
-    @Value("${spring.kafka.consumer.group-id}")
+ //   @Value("${spring.kafka.consumer.group-id}")
     private String group;
 
 
     public KafkaConsumerConfig(KafkaProperties kafkaProperties) {
         this.kafkaProperties = kafkaProperties;
+    }
+
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, String> stringKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, String> factory
+                = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(stringConsumerFactory());
+        factory.setReplyTemplate(kafkaTemplate());
+        return factory;
+    }
+
+    @Bean
+    public ConsumerFactory<String, String> stringConsumerFactory() {
+        Map<String, Object> props = consumerConfigs();
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        return new DefaultKafkaConsumerFactory<>(props);
     }
 
     @Bean
@@ -48,7 +64,7 @@ public class KafkaConsumerConfig {
     public ConsumerFactory<String, UserLoginDto> userLoginConsumerFactory() {
         Map<String, Object> props = consumerConfigs();
 
-        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,  UserLoginDeserializer.class);
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, UserLoginDeserializer.class);
         return new DefaultKafkaConsumerFactory<>(props);
     }
 
@@ -64,7 +80,7 @@ public class KafkaConsumerConfig {
     @Bean
     public ConsumerFactory<String, UserRegistrationDto> userRegistrationConsumerFactory() {
         Map<String, Object> props = consumerConfigs();
-        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,  UserRegistrationDeserializer.class);
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, UserRegistrationDeserializer.class);
         return new DefaultKafkaConsumerFactory<>(props);
     }
 
@@ -77,6 +93,7 @@ public class KafkaConsumerConfig {
     public KafkaTemplate<String, String> kafkaTemplate() {
         return new KafkaTemplate<>(producerFactory());
     }
+
     @Bean
     public ProducerFactory<String, String> producerFactory() {
         return new DefaultKafkaProducerFactory<>(producerConfigs());
@@ -85,15 +102,17 @@ public class KafkaConsumerConfig {
     @Bean
     public Map<String, Object> consumerConfigs() {
         Map<String, Object> props = new HashMap<>();
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, group);
+     //   props.put(ConsumerConfig.GROUP_ID_CONFIG, group);
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         return props;
     }
+
     private Map<String, Object> producerConfigs() {
         Map<String, Object> props = new HashMap<>(kafkaProperties.buildProducerProperties());
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         props.put(ProducerConfig.RETRIES_CONFIG, Integer.MAX_VALUE);
+        props.put(ProducerConfig.ACKS_CONFIG, "all");
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         return props;

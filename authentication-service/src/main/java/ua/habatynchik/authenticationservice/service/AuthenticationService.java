@@ -5,6 +5,8 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import ua.habatynchik.authenticationservice.dto.UserLoginDto;
 import ua.habatynchik.authenticationservice.dto.UserRegistrationDto;
@@ -21,7 +23,7 @@ public class AuthenticationService {
 
     @KafkaListener(
             topics = "${spring.kafka.topic.reg-request}",
-            groupId = "${spring.kafka.consumer.group-id}",
+            groupId = "group",
             containerFactory = "userRegistrationKafkaListenerContainerFactory"
     )
     @SendTo("${spring.kafka.topic.reg-response}")
@@ -44,7 +46,7 @@ public class AuthenticationService {
 
     @KafkaListener(
             topics = "${spring.kafka.topic.auth-request}",
-            groupId = "${spring.kafka.consumer.group-id}",
+            groupId = "group",
             containerFactory = "userLoginKafkaListenerContainerFactory"
     )
     @SendTo("${spring.kafka.topic.auth-response}")
@@ -54,7 +56,14 @@ public class AuthenticationService {
 
         UserLoginDto userLoginDto = record.value();
 
-        return userService.authenticate(userLoginDto);
+        try {
+            return userService.authenticate(userLoginDto);
+        } catch (UsernameNotFoundException e){
+            return "User not found";
+        } catch (BadCredentialsException e){
+            return "Invalid username/password";
+        }
+
     }
 
 }
