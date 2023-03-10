@@ -22,6 +22,7 @@ public class TokenRefreshListener {
     private final JwtTokenProvider tokenProvider;
     private final JwtTokenValidationService tokenValidationService;
 
+
     @KafkaListener(
             topics = "${spring.kafka.topic.jwt-request}",
             groupId = "${spring.kafka.consumer.group-id.group-refresh}"
