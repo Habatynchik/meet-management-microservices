@@ -3,7 +3,6 @@ package ua.habatynchik.webservice.controller;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +17,6 @@ import ua.habatynchik.webservice.dto.UserRegistrationDto;
 import ua.habatynchik.webservice.service.LoginService;
 import ua.habatynchik.webservice.service.RegistrationService;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -37,7 +35,8 @@ public class UserController {
         }
 
         String response = registrationService.registerUser(userRegistrationDto);
-        return new ResponseEntity<>(response, HttpStatus.OK);
+
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
     @PostMapping("/login")

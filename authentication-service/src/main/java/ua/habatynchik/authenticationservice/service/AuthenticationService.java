@@ -23,7 +23,7 @@ public class AuthenticationService {
 
     @KafkaListener(
             topics = "${spring.kafka.topic.reg-request}",
-            groupId = "group",
+            groupId = "${spring.kafka.consumer.group-id.group-common}",
             containerFactory = "userRegistrationKafkaListenerContainerFactory"
     )
     @SendTo("${spring.kafka.topic.reg-response}")
@@ -46,7 +46,7 @@ public class AuthenticationService {
 
     @KafkaListener(
             topics = "${spring.kafka.topic.auth-request}",
-            groupId = "group",
+            groupId = "${spring.kafka.consumer.group-id.group-common}",
             containerFactory = "userLoginKafkaListenerContainerFactory"
     )
     @SendTo("${spring.kafka.topic.auth-response}")
