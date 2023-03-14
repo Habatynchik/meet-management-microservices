@@ -1,6 +1,7 @@
 package ua.habatynchik.authenticationservice.jwt;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Value;
@@ -62,12 +63,24 @@ public class JwtTokenProvider implements Serializable {
     }
 
     public String refreshToken(String token) {
-        final Claims claims = getAllClaimsFromToken(token);
-        claims.setIssuedAt(new Date());
-        claims.setExpiration(new Date(System.currentTimeMillis() + expiration * 1000L));
-        return Jwts.builder()
-                .setClaims(claims)
-                .signWith(SignatureAlgorithm.HS512, secret)
-                .compact();
+        try {
+            final Claims claims = getAllClaimsFromToken(token);
+            claims.setIssuedAt(new Date());
+            claims.setExpiration(new Date(System.currentTimeMillis() + expiration * 1000L));
+            return Jwts.builder()
+                    .setClaims(claims)
+                    .signWith(SignatureAlgorithm.HS512, secret)
+                    .compact();
+
+        } catch (ExpiredJwtException e) {
+            final Claims claims = e.getClaims();
+            claims.setIssuedAt(new Date());
+            claims.setExpiration(new Date(System.currentTimeMillis() + expiration * 1000L));
+            return Jwts.builder()
+                    .setClaims(claims)
+                    .signWith(SignatureAlgorithm.HS512, secret)
+                    .compact();
+        }
+
     }
 }

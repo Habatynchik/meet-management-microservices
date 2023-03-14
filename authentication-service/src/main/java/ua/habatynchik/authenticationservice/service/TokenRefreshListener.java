@@ -44,7 +44,6 @@ public class TokenRefreshListener {
 
         log.info("processValidateRequest");
 
-
         String token = record.value().toString();
 
         if (tokenValidationService.validateToken(token) ){
