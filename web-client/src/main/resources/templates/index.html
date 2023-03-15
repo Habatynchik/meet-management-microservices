@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns:th="http:/www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
+<head th:replace="fragments :: html_head(pageTitle='Login')" />
+<body>
+<div class="container text-center">
+
+    <div sec:authorize="isAuthenticated()">
+        Authenticated as <span sec:authentication="name"></span></div>
+    Role(s):
+    <th:block th:each="r, iter:${#authentication.getAuthorities()}">
+        <span th:text="${r}"></span>
+        <th:block th:if="${!iter.last}">, </th:block>
+    </th:block>
+    <a href="\login"> login </a>
+    <a href="\register"> register </a>
+
+
+    <div sec:authorize="isAuthenticated()">
+        <form style="padding: 0; margin: 0" method="get" action="/logout">
+
+            <button type="submit" class="btn btn-outline-primary me-2">
+                Logout
+            </button>
+
+        </form>
+    </div>
+
+</div>
+</body>
+</html>

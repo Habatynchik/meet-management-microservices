@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http:/www.thymeleaf.org">
+<head th:replace="fragments :: html_head(pageTitle='Login')" />
+<body>
+<div class="container text-center">
+
+
+    <form th:action="@{/register}" method="post" style="max-width: 400px; margin: 0 auto;"  th:object="${userDto}">
+
+        <div class="form-group pb-3">
+            <label for="username" th:text="#{registrationPage.username}"></label>
+            <input type="email" name="email" th:field="*{username}" id="username"
+                   maxlength="64" class="form-control" aria-describedby="loginHelp">
+        </div>
+
+        <div class="form-group pb-3">
+            <label for="email" th:text="#{registrationPage.login}"></label>
+            <input type="email" name="email" th:field="*{email}" id="email"
+                   maxlength="64" class="form-control" aria-describedby="loginHelp">
+        </div>
+
+        <div class="form-group pb-3">
+            <label for="password" th:text="#{registrationPage.password} + ':'"> </label><br>
+            <input type="password" name="password" id="password" maxlength="64"
+                   class="form-control" th:field="*{password}">
+        </div>
+
+        <div class="form-group pb-3">
+            <label for="confirmPassword" th:text="#{registrationPage.confirmPassword} + ':'"> </label><br>
+            <input type="password" name="confirmPassword" id="confirmPassword"
+                   class="form-control" th:field="*{confirmPassword}">
+        </div>
+
+        <div class="form-group pb-3">
+            <label for="firstName" th:text="#{registrationPage.firstName} + ':'"> </label><br>
+            <input type="text" name="firstName" th:field="*{firstName}"
+                   id="firstName" maxlength="32" class="form-control">
+        </div>
+
+        <div class="alert alert-warning" role="alert"
+             th:if="${#fields.hasErrors('firstName')}"
+             th:text=" #{registrationPage.exception.firstNameSizeOutOfBoundsException}">
+        </div>
+
+
+        <div class="form-group pb-3">
+            <label for="secondName" th:text="#{registrationPage.secondName} + ':'"></label><br>
+            <input type="text" name="secondName" th:field="*{secondName}"
+                   id="secondName" maxlength="32" class="form-control">
+        </div>
+
+        <div class="alert alert-warning" role="alert"
+             th:if="${#fields.hasErrors('secondName')}"
+             th:text=" #{registrationPage.exception.secondNameSizeOutOfBoundsException}">
+        </div>
+
+        <div class="text-center mt-3">
+            <button type="submit" class="btn btn-primary" th:text="#{registrationPage.signUpButton}">
+
+            </button>
+        </div>
+
+    </form>
+</div>
+</body>
+</html>

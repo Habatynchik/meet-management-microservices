@@ -1,4 +1,4 @@
-package ua.habatynchik.meetservice;
+package ua.habatynchik.webclient;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
