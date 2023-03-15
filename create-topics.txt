@@ -4,3 +4,5 @@ kafka-topics --bootstrap-server localhost:9092 --create --topic reg-request --pa
 kafka-topics --bootstrap-server localhost:9092 --create --topic reg-response --partitions 3 --replication-factor 1
 kafka-topics --bootstrap-server localhost:9092 --create --topic jwt-request --partitions 3 --replication-factor 1
 kafka-topics --bootstrap-server localhost:9092 --create --topic jwt-response --partitions 3 --replication-factor 1
+kafka-topics --bootstrap-server localhost:9092 --create --topic user-request --partitions 3 --replication-factor 1
+kafka-topics --bootstrap-server localhost:9092 --create --topic user-response --partitions 3 --replication-factor 1
