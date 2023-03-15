@@ -26,11 +26,16 @@ public class TokenController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
 
-        String newToken = tokenService.refreshToken(token);
+
+        String result = tokenService.refreshToken(token);
+
+        if (result.equals("Error: Invalid JWT token")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(result);
+        }
 
         return ResponseEntity.ok()
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + newToken)
-                .body(newToken);
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + result)
+                .body(result);
     }
 
 
@@ -45,7 +50,11 @@ public class TokenController {
         String result = tokenService.validateToken(token);
 
         if (result.equals("Error: Username not found")) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(result);
+        } else if (result.equals("Error: Invalid JWT token")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(result);
+        } else if (result.equals("Error: Unexpected error")) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(result);
         } else if (result.equals("Error: Token expired")) {
 
             String newToken = tokenService.refreshToken(token);
@@ -54,11 +63,6 @@ public class TokenController {
             return ResponseEntity.ok()
                     .header(HttpHeaders.AUTHORIZATION, "Bearer " + newToken)
                     .body(result);
-
-        } else if (result.equals("Error: Unsupported JWT token")) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        } else if (result.equals("Error: Unexpected error")) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
 
         return ResponseEntity.ok()

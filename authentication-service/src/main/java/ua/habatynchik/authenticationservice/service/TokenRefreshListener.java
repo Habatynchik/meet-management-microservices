@@ -1,6 +1,7 @@
 package ua.habatynchik.authenticationservice.service;
 
 import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.SignatureException;
 import io.jsonwebtoken.UnsupportedJwtException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,6 +11,7 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
+import ua.habatynchik.authenticationservice.exception.InvalidTokenException;
 import ua.habatynchik.authenticationservice.jwt.JwtTokenProvider;
 import ua.habatynchik.authenticationservice.jwt.JwtTokenValidationService;
 
@@ -31,7 +33,12 @@ public class TokenRefreshListener {
     public String processTokenRefreshRequest(ConsumerRecord<String, String> record) {
         String token = record.value().toString();
 
-        return tokenProvider.refreshToken(token);
+        try {
+            return tokenProvider.refreshToken(token);
+        } catch (InvalidTokenException e) {
+            log.error("Invalid JWT token", e);
+            return "Error: Invalid JWT token";
+        }
     }
 
     @KafkaListener(
@@ -52,9 +59,9 @@ public class TokenRefreshListener {
         } catch (ExpiredJwtException e) {
             log.error("Token expired", e);
             return "Error: Token expired";
-        } catch (UnsupportedJwtException e) {
-            log.error("Unsupported JWT token", e);
-            return "Error: Unsupported JWT token";
+        }  catch (InvalidTokenException e) {
+            log.error("Invalid JWT token", e);
+            return "Error: Invalid JWT token";
         } catch (Exception e) {
             log.error("Unexpected error", e);
             return "Error: Unexpected error";
