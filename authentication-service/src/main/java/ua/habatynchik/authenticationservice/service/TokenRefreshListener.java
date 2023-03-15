@@ -41,6 +41,7 @@ public class TokenRefreshListener {
     )
     @SendTo("${spring.kafka.topic.jwt-response}")
     public String processValidateRequest(ConsumerRecord<String, String> record) {
+
         String token = record.value().toString();
 
         try {

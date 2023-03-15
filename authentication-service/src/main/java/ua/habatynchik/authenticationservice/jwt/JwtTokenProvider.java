@@ -7,6 +7,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
+import ua.habatynchik.authenticationservice.exception.InvalidTokenException;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -29,11 +30,15 @@ public class JwtTokenProvider implements Serializable {
 
 
     public String getUsernameFromToken(String token) {
+
         return getClaimFromToken(token, Claims::getSubject);
+
     }
 
     public Date getExpirationDateFromToken(String token) {
+
         return getClaimFromToken(token, Claims::getExpiration);
+
     }
 
     public <T> T getClaimFromToken(String token, Function<Claims, T> claimsResolver) {
@@ -45,7 +50,7 @@ public class JwtTokenProvider implements Serializable {
         return Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
     }
 
-    public Boolean isTokenExpired(String token) {
+    public Boolean isTokenExpired(String token)  {
         final Date expiration = getExpirationDateFromToken(token);
         return expiration.before(new Date());
     }
