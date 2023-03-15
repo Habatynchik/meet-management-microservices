@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import ua.habatynchik.userservice.model.Role;
 
 @Data
 @AllArgsConstructor
@@ -13,16 +14,17 @@ import lombok.NoArgsConstructor;
 @Builder
 public class UserDto {
 
-    @NotBlank(message = "Username cannot be blank")
     private String username;
 
-    @NotBlank(message = "Email cannot be blank")
-    @Email(message = "Email should be valid")
     private String email;
 
-    @NotBlank(message = "First name cannot be blank")
     private String firstName;
 
-    @NotBlank(message = "Second name cannot be blank")
     private String secondName;
+    private RoleEnum role;
+
+    public enum RoleEnum {
+        CLIENT, ADMIN, GUEST;
+    }
+
 }

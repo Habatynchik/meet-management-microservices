@@ -16,8 +16,10 @@ import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.listener.KafkaMessageListenerContainer;
 import org.springframework.kafka.requestreply.ReplyingKafkaTemplate;
+import ua.habatynchik.gatewayservice.dto.UserDto;
 import ua.habatynchik.gatewayservice.dto.UserLoginDto;
 import ua.habatynchik.gatewayservice.dto.UserRegistrationDto;
+import ua.habatynchik.gatewayservice.dto.deserialization.UserDeserializer;
 import ua.habatynchik.gatewayservice.dto.serialization.UserLoginSerializer;
 import ua.habatynchik.gatewayservice.dto.serialization.UserRegistrationSerializer;
 
@@ -31,6 +33,9 @@ public class KafkaProducerConfig {
     private String bootstrapServers;
     @Value("${spring.kafka.consumer.group-id.group-common}")
     private String group;
+
+    @Value("${spring.kafka.topic.user-response}")
+    private String userResponse;
 
     @Value("${spring.kafka.topic.auth-response}")
     private String authResponse;
@@ -51,6 +56,19 @@ public class KafkaProducerConfig {
         var producerFactory = new DefaultKafkaProducerFactory<>(producerConfigs(), new StringSerializer(), new StringSerializer());
         var replyContainer = new KafkaMessageListenerContainer<>(stringConsumerFactory(), new ContainerProperties(jwtResponse));
         return new ReplyingKafkaTemplate<>(producerFactory, replyContainer);
+    }
+
+    @Bean
+    public ReplyingKafkaTemplate<String, String, UserDto> replyingKafkaTemplateForStringAndUserDto() {
+        var producerFactory = new DefaultKafkaProducerFactory<>(producerConfigs(), new StringSerializer(), new StringSerializer());
+        var replyContainer = new KafkaMessageListenerContainer<>(userDtoConsumerFactory(), new ContainerProperties(userResponse));
+        return new ReplyingKafkaTemplate<>(producerFactory, replyContainer);
+    }
+    @Bean
+    public ConsumerFactory<String, UserDto> userDtoConsumerFactory() {
+        Map<String, Object> props = consumerConfigs();
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, UserDeserializer.class);
+        return new DefaultKafkaConsumerFactory<>(props);
     }
 
     @Bean

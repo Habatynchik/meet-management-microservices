@@ -13,7 +13,7 @@ import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.*;
 import org.springframework.kafka.support.KafkaHeaders;
 import ua.habatynchik.userservice.dto.UserDto;
-import ua.habatynchik.userservice.dto.deserialization.UserDeserializer;
+import ua.habatynchik.userservice.dto.serialization.UserSerializer;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -27,23 +27,25 @@ public class KafkaConsumerConfig {
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
 
-    @Value("${spring.kafka.consumer.group-id.user-group}")
-    private String userGroup;
+    @Value("${spring.kafka.consumer.group-id.group-common}")
+    private String group;
+
+    @Value("${spring.kafka.consumer.group-id.get-user-group}")
+    private String getUserGroup;
 
     public KafkaConsumerConfig(KafkaProperties kafkaProperties) {
         this.kafkaProperties = kafkaProperties;
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, String> userGroupListenerContainerFactory() {
-        return stringConcurrentKafkaListenerContainerFactoryByGroup(userGroup);
+    public ConcurrentKafkaListenerContainerFactory<String, String> getUserGroupListenerContainerFactory() {
+        return stringConcurrentKafkaListenerContainerFactoryByGroup(getUserGroup);
     }
 
     private ConcurrentKafkaListenerContainerFactory<String, String> stringConcurrentKafkaListenerContainerFactoryByGroup(String group) {
-        ConcurrentKafkaListenerContainerFactory<String, String> factory
-                = new ConcurrentKafkaListenerContainerFactory<>();
+        ConcurrentKafkaListenerContainerFactory<String, String> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(stringConsumerFactory());
-        factory.setReplyTemplate(kafkaTemplate());
+        factory.setReplyTemplate(kafkaTemplateForUserDto());
         factory.setRecordFilterStrategy(consumerRecord -> !Arrays.equals(consumerRecord.headers().lastHeader(KafkaHeaders.GROUP_ID).value(), group.getBytes()));
         return factory;
     }
@@ -55,42 +57,28 @@ public class KafkaConsumerConfig {
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, UserDto> userKafkaListenerContainerFactory(ConcurrentKafkaListenerContainerFactory<String, UserDto> factory) {
-        factory.setConsumerFactory(userConsumerFactory());
-        factory.setReplyTemplate(kafkaTemplate());
-        return factory;
+    public KafkaTemplate<String, UserDto> kafkaTemplateForUserDto() {
+        return new KafkaTemplate<>(producerFactoryForUserDto());
     }
 
-    @Bean
-    public KafkaTemplate<String, String> kafkaTemplate() {
-        return new KafkaTemplate<>(producerFactory());
-    }
-
-    private ConsumerFactory<String, UserDto> userConsumerFactory() {
-        Map<String, Object> props = consumerConfigs();
-        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, UserDeserializer.class);
-        return new DefaultKafkaConsumerFactory<>(props);
-    }
-
-    private ProducerFactory<String, String> producerFactory() {
-        return new DefaultKafkaProducerFactory<>(producerConfigs());
+    private ProducerFactory<String, UserDto> producerFactoryForUserDto() {
+        return new DefaultKafkaProducerFactory<>(producerConfigs(), new StringSerializer(), new UserSerializer());
     }
 
     private Map<String, Object> consumerConfigs() {
         Map<String, Object> props = new HashMap<>();
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, userGroup);
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, group);
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         return props;
     }
 
     private Map<String, Object> producerConfigs() {
-        Map<String, Object> props = new HashMap<>(kafkaProperties.buildProducerProperties());
+        Map<String, Object> props = new HashMap<>();
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         props.put(ProducerConfig.RETRIES_CONFIG, Integer.MAX_VALUE);
         props.put(ProducerConfig.ACKS_CONFIG, "1");
-        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         return props;
     }
 }

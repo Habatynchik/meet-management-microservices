@@ -41,7 +41,7 @@ public class WebController {
     public String doLogin(@RequestParam("login") String login, @RequestParam("password") String password, HttpSession session) {
 
         RestTemplate restTemplate = new RestTemplate();
-        String url = "http://localhost:8081/api/user/login";
+        String url = "http://localhost:8081/api/auth/login";
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
