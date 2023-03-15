@@ -60,6 +60,8 @@ public class UserService implements UserDetailsService {
         return userOptional.orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
     }
 
+
+
     @Transactional
     public User registerNewAccount(UserRegistrationDto userRegistrationDto) throws EmailAlreadyExistsException, UserAlreadyExistsException, PasswordMatchException {
         validateUserRegistrationDto(userRegistrationDto);
