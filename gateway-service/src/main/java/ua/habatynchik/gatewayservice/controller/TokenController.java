@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -11,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import ua.habatynchik.gatewayservice.service.TokenService;
 
 @RestController
-@RequestMapping("api/user")
+@RequestMapping("api/token")
 @AllArgsConstructor
 public class TokenController {
 
@@ -19,17 +20,58 @@ public class TokenController {
 
     @PostMapping("/refresh")
     public ResponseEntity<?> refreshJWT(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
-        if (!authorizationHeader.startsWith("Bearer ")) {
+        String token = takeOutJwtToken(authorizationHeader);
+
+        if (token == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
-
-        String token = authorizationHeader.substring(7);
 
         String newToken = tokenService.refreshToken(token);
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + newToken)
                 .body(newToken);
+    }
+
+
+    @PostMapping("/validate")
+    public ResponseEntity<?> validateJWT(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
+        String token = takeOutJwtToken(authorizationHeader);
+
+        if (token == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+
+        String result = tokenService.validateToken(token);
+
+        if (result.equals("Error: Username not found")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        } else if (result.equals("Error: Token expired")) {
+
+            String newToken = tokenService.refreshToken(token);
+            result = tokenService.validateToken(newToken);
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + newToken)
+                    .body(result);
+
+        } else if (result.equals("Error: Unsupported JWT token")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        } else if (result.equals("Error: Unexpected error")) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                .body(result);
+    }
+
+    private String takeOutJwtToken(String authorizationHeader) {
+        if (!authorizationHeader.startsWith("Bearer ")) {
+            return null;
+        }
+
+        return authorizationHeader.substring(7);
     }
 
 }
