@@ -1,14 +1,11 @@
 package ua.habatynchik.authenticationservice.jwt;
 
 import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.SignatureException;
-import io.jsonwebtoken.UnsupportedJwtException;
 import lombok.AllArgsConstructor;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.stereotype.Service;
 import ua.habatynchik.authenticationservice.exception.InvalidTokenException;
+import ua.habatynchik.authenticationservice.exception.UserNotFoundException;
+import ua.habatynchik.authenticationservice.model.User;
 import ua.habatynchik.authenticationservice.service.UserService;
 
 @Service
@@ -18,13 +15,13 @@ public class JwtTokenValidationService {
     private JwtTokenProvider jwtTokenProvider;
     private UserService userService;
 
-    public String validateToken(String token) throws UsernameNotFoundException, ExpiredJwtException, InvalidTokenException {
+    public Long validateToken(String token) throws UserNotFoundException, ExpiredJwtException, InvalidTokenException {
         try {
-            String username = jwtTokenProvider.getUsernameFromToken(token);
-            UserDetails user = userService.loadUserByUsername(username);
+            Long userId = jwtTokenProvider.getUserIdFromToken(token);
+            User user = userService.loadUserByUserId(userId);
 
-            return user.getUsername();
-        } catch (ExpiredJwtException | UsernameNotFoundException | InvalidTokenException e) {
+            return user.getId();
+        } catch (ExpiredJwtException | UserNotFoundException | InvalidTokenException e) {
             throw e;
         }
     }

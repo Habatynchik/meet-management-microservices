@@ -12,6 +12,7 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import ua.habatynchik.authenticationservice.exception.InvalidTokenException;
+import ua.habatynchik.authenticationservice.exception.UserNotFoundException;
 import ua.habatynchik.authenticationservice.jwt.JwtTokenProvider;
 import ua.habatynchik.authenticationservice.jwt.JwtTokenValidationService;
 
@@ -52,19 +53,20 @@ public class TokenRefreshListener {
         String token = record.value().toString();
 
         try {
-            return tokenValidationService.validateToken(token);
-        } catch (UsernameNotFoundException e) {
-            log.error("Username not found", e);
-            return "Error: Username not found";
+            return tokenValidationService.validateToken(token).toString();
+
+        } catch (UserNotFoundException e) {
+            log.error("User not found", e);
+            return "User not found";
         } catch (ExpiredJwtException e) {
             log.error("Token expired", e);
-            return "Error: Token expired";
+            return "Token expired";
         }  catch (InvalidTokenException e) {
             log.error("Invalid JWT token", e);
-            return "Error: Invalid JWT token";
+            return "Invalid JWT token";
         } catch (Exception e) {
             log.error("Unexpected error", e);
-            return "Error: Unexpected error";
+            return "Unexpected error";
         }
 
     }

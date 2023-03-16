@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import ua.habatynchik.authenticationservice.exception.InvalidTokenException;
+import ua.habatynchik.authenticationservice.model.User;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -33,8 +34,18 @@ public class JwtTokenProvider implements Serializable {
             return getClaimFromToken(token, Claims::getSubject);
         } catch (ExpiredJwtException e) {
             String refreshedToken = refreshToken(token);
-
             return getClaimFromToken(refreshedToken, Claims::getSubject);
+        } catch (SignatureException e) {
+            throw e;
+        }
+    }
+
+    public Long getUserIdFromToken(String token) throws ClaimJwtException, InvalidTokenException {
+        try {
+            return getClaimFromToken(token, claims -> claims.get("id", Long.class));
+        } catch (ExpiredJwtException e) {
+            String refreshedToken = refreshToken(token);
+            return getClaimFromToken(refreshedToken, claims -> claims.get("id", Long.class));
         } catch (SignatureException e) {
             throw e;
         }
@@ -72,9 +83,15 @@ public class JwtTokenProvider implements Serializable {
         }
     }
 
-    public String generateToken(UserDetails userDetails) {
+    public String generateToken(User user) {
         Map<String, Object> claims = new HashMap<>();
-        return doGenerateToken(claims, userDetails.getUsername());
+        claims.put("id", user.getId());
+        claims.put("username", user.getUsername());
+        claims.put("email", user.getEmail());
+        claims.put("firstName", user.getFirstName());
+        claims.put("secondName", user.getSecondName());
+        claims.put("role", user.getRole().getRoleEnum().name());
+        return doGenerateToken(claims, user.getUsername());
     }
 
     private String doGenerateToken(Map<String, Object> claims, String subject) {

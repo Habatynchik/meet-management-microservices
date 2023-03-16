@@ -18,7 +18,7 @@ public class UserController {
 
     @GetMapping("/get")
     public ResponseEntity<?> getUser(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader,
-                                     @RequestBody String username) {
+                                     @RequestParam String username) {
 
         log.info(username);
         UserDto response = userService.getUserByUsername(username);

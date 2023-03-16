@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import ua.habatynchik.gatewayservice.dto.ValidateTokenResponseDto;
 import ua.habatynchik.gatewayservice.service.TokenService;
 
 @RestController
@@ -48,25 +49,42 @@ public class TokenController {
 
         String result = tokenService.validateToken(token);
 
-        if (result.equals("Error: Username not found")) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(result);
-        } else if (result.equals("Error: Invalid JWT token")) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(result);
-        } else if (result.equals("Error: Unexpected error")) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(result);
-        } else if (result.equals("Error: Token expired")) {
+        switch (result) {
+            case "Invalid JWT token", "User not found" -> {
+                ValidateTokenResponseDto response = ValidateTokenResponseDto.builder()
+                        .message(result)
+                        .build();
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+            }
+            case "Unexpected error" -> {
+                ValidateTokenResponseDto response = ValidateTokenResponseDto.builder()
+                        .message(result)
+                        .build();
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+            }
+            case "Token expired" -> {
+                String newToken = tokenService.refreshToken(token);
+                result = tokenService.validateToken(newToken);
 
-            String newToken = tokenService.refreshToken(token);
-            result = tokenService.validateToken(newToken);
+                ValidateTokenResponseDto response = ValidateTokenResponseDto.builder()
+                        .userId(Long.valueOf(result))
+                        .message("Token has been refreshed")
+                        .build();
 
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + newToken)
-                    .body(result);
+                return ResponseEntity.ok()
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + newToken)
+                        .body(response);
+            }
         }
+
+        ValidateTokenResponseDto response = ValidateTokenResponseDto.builder()
+                .userId(Long.valueOf(result))
+                .message("Token is valid")
+                .build();
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                .body(result);
+                .body(response);
     }
 
     private String takeOutJwtToken(String authorizationHeader) {

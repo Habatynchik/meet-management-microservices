@@ -11,6 +11,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import ua.habatynchik.authenticationservice.exception.UserNotFoundException;
 import ua.habatynchik.authenticationservice.jwt.JwtTokenProvider;
 import ua.habatynchik.authenticationservice.dto.UserLoginDto;
 import ua.habatynchik.authenticationservice.dto.UserRegistrationDto;
@@ -41,10 +42,7 @@ public class UserService implements UserDetailsService {
             throw new BadCredentialsException("Invalid username/password");
         }
 
-        UserDetails userDetails = loadUserByUsername(user.getUsername());
-
-        log.info(userDetails);
-        return jwtTokenProvider.generateToken(userDetails);
+        return jwtTokenProvider.generateToken(user);
     }
 
     @Override
@@ -60,7 +58,11 @@ public class UserService implements UserDetailsService {
         return userOptional.orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
     }
 
+    public User loadUserByUserId(Long userId) throws UserNotFoundException {
+        Optional<User> userOptional = userRepository.findById(userId);
 
+        return userOptional.orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
+    }
 
     @Transactional
     public User registerNewAccount(UserRegistrationDto userRegistrationDto) throws EmailAlreadyExistsException, UserAlreadyExistsException, PasswordMatchException {
