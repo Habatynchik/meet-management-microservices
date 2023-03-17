@@ -56,7 +56,7 @@ public class UserListenerService {
         return null;
     }
 
-    @KafkaListener(
+    /*@KafkaListener(
             topics = "${spring.kafka.topic.user-request}",
             groupId = "${spring.kafka.consumer.group-id.add-user-group}",
             containerFactory = "addUserGroupListenerContainerFactory"
@@ -74,7 +74,7 @@ public class UserListenerService {
     @SendTo("${spring.kafka.topic.user-response}")
     public String listenAndProcessUpdateUserRequest(ConsumerRecord<String, UserDto> record) {
         return null;
-    }
+    }*/
 
 }
 

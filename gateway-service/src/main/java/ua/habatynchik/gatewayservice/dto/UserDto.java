@@ -5,8 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -28,5 +26,4 @@ public class UserDto {
     public enum RoleEnum {
         CLIENT, ADMIN, GUEST;
     }
-
 }

@@ -1,12 +1,9 @@
 package ua.habatynchik.userservice.dto;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ua.habatynchik.userservice.model.Role;
 import ua.habatynchik.userservice.model.User;
 
 @Data
@@ -30,7 +27,7 @@ public class UserDto {
         CLIENT, ADMIN, GUEST;
     }
 
-    public UserDto(User user) {
+   public UserDto(User user) {
         this.id = user.getId();
         this.username = user.getUsername();
         this.email = user.getEmail();
