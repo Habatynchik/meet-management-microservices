@@ -22,12 +22,33 @@ public class UserService {
     @Value("${spring.kafka.topic.user-request}")
     private String userRequestTopic;
 
-    @Value("${spring.kafka.consumer.group-id.get-user-group}")
-    private String getUserGroup;
+    @Value("${spring.kafka.consumer.group-id.get-user-by-id-group}")
+    private String getUserByIdGroup;
+
+    @Value("${spring.kafka.consumer.group-id.get-user-by-username-group}")
+    private String getUserByUsernameGroup;
 
     public UserDto getUserByUsername(String username) {
         ProducerRecord<String, String> record = new ProducerRecord<>(userRequestTopic, username);
-        record.headers().add(new RecordHeader(KafkaHeaders.GROUP_ID, getUserGroup.getBytes()));
+        record.headers().add(new RecordHeader(KafkaHeaders.GROUP_ID, getUserByUsernameGroup.getBytes()));
+
+        RequestReplyFuture<String, String, UserDto> future =
+                replyingKafkaTemplate.sendAndReceive(record);
+
+        try {
+            ConsumerRecord<String, UserDto> consumerRecord = future.get();
+            UserDto result = consumerRecord.value();
+            log.info("UserService received response: {}", result);
+            return result;
+
+        } catch (Exception e) {
+            throw new RuntimeException("UserService failed to get response from Kafka", e);
+        }
+    }
+
+    public UserDto getUserById(Long id) {
+        ProducerRecord<String, String> record = new ProducerRecord<>(userRequestTopic, String.valueOf(id));
+        record.headers().add(new RecordHeader(KafkaHeaders.GROUP_ID, getUserByIdGroup.getBytes()));
 
         RequestReplyFuture<String, String, UserDto> future =
                 replyingKafkaTemplate.sendAndReceive(record);
