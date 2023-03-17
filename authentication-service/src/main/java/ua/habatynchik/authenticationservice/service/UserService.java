@@ -34,9 +34,9 @@ public class UserService implements UserDetailsService {
     private final RoleRepository roleRepository;
     private final JwtTokenProvider jwtTokenProvider;
 
-    public String authenticate(UserLoginDto userLoginDto)  throws UsernameNotFoundException, BadCredentialsException {
+    public String authenticate(UserLoginDto userLoginDto) throws UsernameNotFoundException, BadCredentialsException {
         User user = userRepository.findByUsernameOrEmail(userLoginDto.getLogin(), userLoginDto.getLogin())
-                .orElseThrow(()-> new UsernameNotFoundException("User not found with login or email: " + userLoginDto.getLogin()));
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with login or email: " + userLoginDto.getLogin()));
 
         if (!BCrypt.checkpw(userLoginDto.getPassword(), user.getPassword())) {
             throw new BadCredentialsException("Invalid username/password");
@@ -68,13 +68,15 @@ public class UserService implements UserDetailsService {
     public User registerNewAccount(UserRegistrationDto userRegistrationDto) throws EmailAlreadyExistsException, UserAlreadyExistsException, PasswordMatchException {
         validateUserRegistrationDto(userRegistrationDto);
 
-        User user = new User()
-                .setUsername(userRegistrationDto.getUsername())
-                .setEmail(userRegistrationDto.getEmail())
-                .setFirstName(userRegistrationDto.getFirstName())
-                .setSecondName(userRegistrationDto.getSecondName())
-                .setPassword(new BCryptPasswordEncoder().encode(userRegistrationDto.getPassword()))
-                .setRole(roleRepository.findByRoleEnum(Role.RoleEnum.CLIENT));
+        Optional<User> existingUser = userRepository.findByEmail(userRegistrationDto.getEmail());
+        User user = existingUser.orElseGet(User::new);
+
+        user.setUsername(userRegistrationDto.getUsername());
+        user.setEmail(userRegistrationDto.getEmail());
+        user.setFirstName(userRegistrationDto.getFirstName());
+        user.setSecondName(userRegistrationDto.getSecondName());
+        user.setPassword(new BCryptPasswordEncoder().encode(userRegistrationDto.getPassword()));
+        user.setRole(roleRepository.findByRoleEnum(Role.RoleEnum.CLIENT));
 
         log.info("New account '{}' has been created", user);
         return userRepository.save(user);
@@ -83,7 +85,7 @@ public class UserService implements UserDetailsService {
 
     private void validateUserRegistrationDto(UserRegistrationDto userRegistrationDto) throws EmailAlreadyExistsException, UserAlreadyExistsException, PasswordMatchException {
 
-        if (isEmailUnique(userRegistrationDto.getEmail())) {
+        if (isEmailUnique(userRegistrationDto.getEmail()) && !isGuest(userRegistrationDto.getEmail())) {
             log.info("Email {} is reserved", userRegistrationDto.getEmail());
             throw new EmailAlreadyExistsException();
         }
@@ -95,6 +97,16 @@ public class UserService implements UserDetailsService {
             log.info("Passwords don't match");
             throw new PasswordMatchException();
         }
+    }
+
+    private boolean isGuest(String email) {
+        Optional<User> user = userRepository.findByEmail(email);
+        if (user.isPresent()) {
+            Role userRole = roleRepository.findByRoleEnum(user.get().getRole().getRoleEnum());
+            log.info(userRole.getRoleEnum().equals(Role.RoleEnum.GUEST));
+            return userRole.getRoleEnum().equals(Role.RoleEnum.GUEST);
+        }
+        return false;
     }
 
     private boolean isEmailUnique(String email) {

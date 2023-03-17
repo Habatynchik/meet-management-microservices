@@ -29,8 +29,16 @@ public class UserService {
     private String getUserByUsernameGroup;
 
     public UserDto getUserByUsername(String username) {
-        ProducerRecord<String, String> record = new ProducerRecord<>(userRequestTopic, username);
-        record.headers().add(new RecordHeader(KafkaHeaders.GROUP_ID, getUserByUsernameGroup.getBytes()));
+        return getUser(username, getUserByUsernameGroup);
+    }
+
+    public UserDto getUserById(Long id) {
+        return getUser(String.valueOf(id), getUserByIdGroup);
+    }
+
+    private UserDto getUser(String key, String groupId) {
+        ProducerRecord<String, String> record = new ProducerRecord<>(userRequestTopic, key);
+        record.headers().add(new RecordHeader(KafkaHeaders.GROUP_ID, groupId.getBytes()));
 
         RequestReplyFuture<String, String, UserDto> future =
                 replyingKafkaTemplate.sendAndReceive(record);
@@ -40,28 +48,15 @@ public class UserService {
             UserDto result = consumerRecord.value();
             log.info("UserService received response: {}", result);
             return result;
-
         } catch (Exception e) {
             throw new RuntimeException("UserService failed to get response from Kafka", e);
         }
     }
 
-    public UserDto getUserById(Long id) {
-        ProducerRecord<String, String> record = new ProducerRecord<>(userRequestTopic, String.valueOf(id));
-        record.headers().add(new RecordHeader(KafkaHeaders.GROUP_ID, getUserByIdGroup.getBytes()));
+    public boolean hasRole(Long userId, String role){
+        UserDto user = getUserById(userId);
 
-        RequestReplyFuture<String, String, UserDto> future =
-                replyingKafkaTemplate.sendAndReceive(record);
-
-        try {
-            ConsumerRecord<String, UserDto> consumerRecord = future.get();
-            UserDto result = consumerRecord.value();
-            log.info("UserService received response: {}", result);
-            return result;
-
-        } catch (Exception e) {
-            throw new RuntimeException("UserService failed to get response from Kafka", e);
-        }
+        return user.getRole().name().equals(role);
     }
 
 }
