@@ -1,5 +1,7 @@
 package ua.habatynchik.webclient.controller;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.*;
@@ -38,7 +40,7 @@ public class WebController {
     }
 
     @PostMapping("/login")
-    public String doLogin(@RequestParam("login") String login, @RequestParam("password") String password, HttpSession session) {
+    public String doLogin(@RequestParam("login") String login, @RequestParam("password") String password, HttpSession session, HttpServletResponse response) {
 
         RestTemplate restTemplate = new RestTemplate();
         String url = "http://localhost:8081/api/auth/login";
@@ -53,11 +55,14 @@ public class WebController {
         // создаем HttpEntity с телом запроса и заголовками
         HttpEntity<Map<String, String>> request = new HttpEntity<>(requestBody, headers);
 
-        ResponseEntity<String> response = restTemplate.postForEntity( url, request , String.class );
+        ResponseEntity<String> restResponse  = restTemplate.postForEntity( url, request , String.class );
 
-        if (response.getStatusCode() == HttpStatus.OK) {
-            String token = response.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
-            session.setAttribute("token", token);
+        if (restResponse.getStatusCode() == HttpStatus.OK) {
+            String token = restResponse.getHeaders().getFirst(HttpHeaders.AUTHORIZATION).substring(7);
+            Cookie cookie = new Cookie("token", token);
+            cookie.setMaxAge(24 * 60 * 60);
+            cookie.setPath("/");
+            response.addCookie(cookie);
         }
 
         return "redirect:";

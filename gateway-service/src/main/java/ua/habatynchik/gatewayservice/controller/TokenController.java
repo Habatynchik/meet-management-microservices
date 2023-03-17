@@ -50,7 +50,7 @@ public class TokenController {
         String result = tokenService.validateToken(token);
 
         switch (result) {
-            case "Invalid JWT token", "User not found" -> {
+            case "Invalid JWT token", "User not found", "Token expired" -> {
                 ValidateTokenResponseDto response = ValidateTokenResponseDto.builder()
                         .message(result)
                         .build();
@@ -61,19 +61,6 @@ public class TokenController {
                         .message(result)
                         .build();
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-            }
-            case "Token expired" -> {
-                String newToken = tokenService.refreshToken(token);
-                result = tokenService.validateToken(newToken);
-
-                ValidateTokenResponseDto response = ValidateTokenResponseDto.builder()
-                        .userId(Long.valueOf(result))
-                        .message("Token has been refreshed")
-                        .build();
-
-                return ResponseEntity.ok()
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + newToken)
-                        .body(response);
             }
         }
 
