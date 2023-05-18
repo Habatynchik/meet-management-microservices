@@ -26,7 +26,6 @@ public class TokenController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
 
-
         String result = tokenService.refreshToken(token);
 
         if (result.equals("Error: Invalid JWT token")) {
